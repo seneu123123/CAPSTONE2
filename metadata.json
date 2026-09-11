@@ -1,0 +1,8 @@
+{
+  "name": "Remix Holiday Travelers Travel and Tours Inc",
+  "description": "Official Online Booking & Operations Management System for Holiday Travelers Inc. (Pasig City, Philippines) — Curated Tour Packages, 5-Day Passport Assistance, and Visa Processing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
