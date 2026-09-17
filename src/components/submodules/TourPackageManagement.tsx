@@ -20,6 +20,8 @@ import {
   Star,
   ArrowUpRight
 } from 'lucide-react';
+import { ActionConfirmModal } from '../common/ActionConfirmModal';
+import { dispatchAppNotification } from '../../utils/notifications';
 
 interface TourPackageManagementProps {
   packages: TourPackage[];
@@ -42,6 +44,10 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingPackage, setViewingPackage] = useState<TourPackage | null>(null);
+
+  // Deletion Safeguard State
+  const [packageToDelete, setPackageToDelete] = useState<TourPackage | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // Form State for Create / Edit
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -196,7 +202,7 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
           {isOperatorView && (
             <button
               onClick={handleOpenCreateModal}
-              className="flex items-center gap-2 px-5 py-2.5 bg-sunset-coral hover:bg-[#D95339] text-white text-xs font-medium tracking-wider rounded-full shadow-lg shadow-sunset-coral/20 transition-all"
+              className="btn-pop btn-shimmer-wrap flex items-center gap-2 px-5 py-2.5 bg-sunset-coral hover:bg-[#D95339] active:scale-95 text-white text-xs font-medium tracking-wider rounded-full shadow-lg shadow-sunset-coral/20 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Create New Tour Package</span>
@@ -223,7 +229,7 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider transition-all duration-300 ${
+                className={`btn-pop px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider transition-all duration-300 active:scale-95 cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-sunset-coral text-white font-medium shadow-md shadow-sunset-coral/20'
                     : 'bg-white/[0.04] text-sand-muted hover:text-ivory hover:bg-white/[0.08]'
@@ -327,21 +333,24 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditModal(pkg)}
-                        className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-sand-muted hover:text-ivory border border-white/10 transition"
+                        className="btn-pop p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-sand-muted hover:text-ivory border border-white/10 transition cursor-pointer"
                         title="Edit Package"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onDuplicatePackage(pkg)}
-                        className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-sand-muted hover:text-ivory border border-white/10 transition"
+                        className="btn-pop p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-90 text-sand-muted hover:text-ivory border border-white/10 transition cursor-pointer"
                         title="Duplicate Package"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => onDeletePackage(pkg.id)}
-                        className="p-2 rounded-full bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/40 transition"
+                        onClick={() => {
+                          setPackageToDelete(pkg);
+                          setIsDeleteConfirmOpen(true);
+                        }}
+                        className="btn-pop p-2 rounded-full bg-red-950/40 hover:bg-red-900/60 active:scale-90 text-red-300 border border-red-800/40 transition cursor-pointer"
                         title="Delete Package"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -350,7 +359,7 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
                   ) : (
                     <button
                       onClick={() => onSelectBookPackage && onSelectBookPackage(pkg)}
-                      className="px-4 py-2 bg-sunset-coral hover:bg-[#D95339] text-white text-xs font-medium rounded-full transition"
+                      className="btn-pop btn-shimmer-wrap px-4 py-2 bg-sunset-coral hover:bg-[#D95339] active:scale-95 text-white text-xs font-medium rounded-full transition cursor-pointer shadow-md shadow-sunset-coral/20"
                     >
                       Book Now
                     </button>
@@ -549,13 +558,13 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2 rounded-full text-xs text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] transition"
+                  className="btn-pop px-5 py-2 rounded-full text-xs text-sand-muted hover:text-ivory bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-full text-xs font-medium tracking-wider bg-sunset-coral hover:bg-[#D95339] text-white shadow-lg shadow-sunset-coral/20 transition"
+                  className="btn-pop btn-shimmer-wrap px-6 py-2 rounded-full text-xs font-medium tracking-wider bg-sunset-coral hover:bg-[#D95339] active:scale-95 text-white shadow-lg shadow-sunset-coral/20 transition cursor-pointer"
                 >
                   Save Tour Package
                 </button>
@@ -564,6 +573,40 @@ export const TourPackageManagement: React.FC<TourPackageManagementProps> = ({
           </div>
         </div>
       )}
+
+      {/* Deletion Safeguard Modal */}
+      <ActionConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => {
+          setIsDeleteConfirmOpen(false);
+          setPackageToDelete(null);
+        }}
+        onConfirm={() => {
+          if (packageToDelete) {
+            onDeletePackage(packageToDelete.id);
+            dispatchAppNotification({
+              title: 'Tour Package Deleted',
+              message: `${packageToDelete.title} (${packageToDelete.code}) was removed from the active catalog.`,
+              type: 'info'
+            });
+            setPackageToDelete(null);
+            setIsDeleteConfirmOpen(false);
+          }
+        }}
+        title="Permanently Delete Tour Package?"
+        message="This action removes the tour package from the active catalog. Any historical customer bookings referencing this package code will remain securely recorded in the ledger."
+        details={[
+          { label: 'Package Code', value: packageToDelete?.code || '' },
+          { label: 'Expedition Title', value: packageToDelete?.title || '' },
+          { label: 'Destination', value: packageToDelete?.destination || '' },
+          { label: 'Standard Rate', value: `₱${(packageToDelete?.pricePerPax || 0).toLocaleString()} / Pax` },
+          { label: 'Max Capacity', value: `${packageToDelete?.maxCapacity || 0} Pax` },
+        ]}
+        confirmText="Yes, Delete Package"
+        cancelText="No, Keep Package"
+        variant="danger"
+        warningNote="This cannot be undone. Any brochures or direct links referencing this package will become unavailable."
+      />
     </div>
   );
 };

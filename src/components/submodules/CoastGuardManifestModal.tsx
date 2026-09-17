@@ -196,7 +196,7 @@ export const CoastGuardManifestModal: React.FC<CoastGuardManifestModalProps> = (
         <div className="overflow-y-auto p-6 sm:p-8 bg-white text-slate-900 font-sans print:p-0 print:m-0 print:overflow-visible relative">
           
           {/* Document Physical Rubber Stamp Placement */}
-          <div className="absolute top-8 right-8 z-10 pointer-events-none hidden sm:block">
+          <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-10 pointer-events-none block scale-75 sm:scale-100 origin-top-right">
             <RubberStamp
               type={isManifestLocked ? 'VERIFIED' : hasUnpaidPassengers ? 'UNPAID' : 'PAID'}
               subtext={isManifestLocked ? 'PCG STATION CLEARED' : hasUnpaidPassengers ? 'COLLECTION PENDING' : 'ALL FARES SETTLED'}

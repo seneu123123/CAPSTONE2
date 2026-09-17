@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Booking, Passenger, BookingStatus } from '../../types';
+import { RubberStamp } from '../common/RubberStamp';
+import { ActionConfirmModal } from '../common/ActionConfirmModal';
 import { 
   X, 
   User, 
@@ -40,6 +42,8 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
   onUpdateBooking,
   onOpenManifest,
 }) => {
+  const [statusConfirmTarget, setStatusConfirmTarget] = useState<BookingStatus | null>(null);
+
   if (!isOpen || !booking) return null;
 
   const handlePassengerStatusChange = (paxIndex: number, newStatus: 'boarded' | 'pending' | 'noshow') => {
@@ -70,6 +74,12 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
         passengers: currentPassengers,
       });
     }
+  };
+
+  const handleExecuteStatusUpdate = () => {
+    if (!statusConfirmTarget || !onUpdateStatus) return;
+    onUpdateStatus(booking.id, statusConfirmTarget);
+    setStatusConfirmTarget(null);
   };
 
   const passengers = booking.passengers && booking.passengers.length > 0 
@@ -164,10 +174,10 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
                     {(['pending', 'confirmed', 'completed', 'cancelled'] as BookingStatus[]).map((st) => (
                       <button
                         key={st}
-                        onClick={() => onUpdateStatus(booking.id, st)}
-                        className={`py-2 px-3 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer ${
+                        onClick={() => setStatusConfirmTarget(st)}
+                        className={`btn-pop py-2 px-3 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer active:scale-95 ${
                           booking.status === st
-                            ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md'
+                            ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md font-bold'
                             : 'bg-white/[0.03] text-sand-muted border-white/10 hover:bg-white/[0.06] hover:text-ivory'
                         }`}
                       >
@@ -362,7 +372,36 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
               </div>
 
               {/* Financial & Invoice Overview */}
-              <div className="p-5 rounded-2xl bg-[#070B0E] border border-white/10 space-y-3">
+              <div className="p-5 rounded-2xl bg-[#070B0E] border border-white/10 space-y-3 relative overflow-hidden">
+                {/* Physical Official Rubber Stamp */}
+                <div className="absolute top-3 right-3 sm:right-6 pointer-events-none z-10 scale-75 sm:scale-90 origin-top-right">
+                  <RubberStamp
+                    type={
+                      booking.status === 'cancelled'
+                        ? 'CANCELLED'
+                        : (booking.invoice?.status === 'paid' || (booking.status === 'confirmed' && (booking.invoice?.balanceDue ?? 0) === 0))
+                        ? 'PAID'
+                        : (booking.invoice?.amountPaid ?? 0) > 0
+                        ? 'PARTIAL'
+                        : 'UNPAID'
+                    }
+                    subtext={
+                      booking.status === 'cancelled'
+                        ? 'EXPEDITION VOIDED'
+                        : (booking.invoice?.status === 'paid' || (booking.status === 'confirmed' && (booking.invoice?.balanceDue ?? 0) === 0))
+                        ? 'SETTLED IN FULL'
+                        : (booking.invoice?.amountPaid ?? 0) > 0
+                        ? 'DEPOSIT CONFIRMED'
+                        : 'PAYMENT REQUIRED'
+                    }
+                    date={booking.date}
+                    verificationCode={booking.bookingRef}
+                    size="sm"
+                    rotation={-7}
+                    className="shadow-xl"
+                  />
+                </div>
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-ivory flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-cyan-400" />
@@ -405,7 +444,7 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
               </span>
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-xs font-semibold text-ivory border border-white/10 transition-colors cursor-pointer"
+                className="btn-pop px-5 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] active:scale-95 text-xs font-semibold text-ivory border border-white/10 transition-colors cursor-pointer"
               >
                 Close Drawer
               </button>
@@ -413,6 +452,26 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
           </motion.div>
         </div>
       </div>
+
+      {/* Booking Status Change Safeguard Modal */}
+      <ActionConfirmModal
+        isOpen={statusConfirmTarget !== null}
+        onClose={() => setStatusConfirmTarget(null)}
+        onConfirm={handleExecuteStatusUpdate}
+        title={`Change Booking Status to ${statusConfirmTarget ? statusConfirmTarget.toUpperCase() : ''}?`}
+        message={`Are you sure you want to transition booking ${booking.bookingRef} from "${booking.status.toUpperCase()}" to "${statusConfirmTarget ? statusConfirmTarget.toUpperCase() : ''}"?`}
+        details={[
+          { label: 'Booking Ref', value: booking.bookingRef },
+          { label: 'Lead Guest', value: booking.customer.fullName },
+          { label: 'Expedition', value: booking.tourTitle },
+          { label: 'Departure Date', value: booking.date },
+          { label: 'Target Status', value: statusConfirmTarget?.toUpperCase() || '' },
+        ]}
+        confirmText={`Yes, Set as ${statusConfirmTarget?.toUpperCase() || ''}`}
+        cancelText="Cancel Status Change"
+        variant={statusConfirmTarget === 'cancelled' ? 'danger' : 'warning'}
+        warningNote={statusConfirmTarget === 'cancelled' ? 'WARNING: Marking as Cancelled will release vessel berths, notify maritime dispatch, and require refund review.' : undefined}
+      />
     </AnimatePresence>
   );
 };

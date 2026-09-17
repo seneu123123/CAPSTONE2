@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     shortName: 'Holiday Travelers',
     accreditationNo: 'DOT-ACCR-NCR-2026',
     tagline: 'Online Booking, Passport & Visa Processing, and Curated Tour Packages',
-    email: 'karlljacob8@gmail.com',
+    email: 'holidaytravelersinc2022@gmail.com',
     phone: '0916 525 3517',
     address: 'Unit 1101 City & Land Mega Plaza Inc., ADB Ave., Corner Garnet Rd., Ortigas Center San Antonio, Pasig City, Philippines, 1605',
     currencySymbol: '₱',
@@ -182,7 +182,15 @@ export default function App() {
     const saved = localStorage.getItem('holiday_travelers_settings_v2');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed?.agency) {
+          // If agency still has previous email or empty, migrate to holidaytravelersinc2022@gmail.com
+          if (!parsed.agency.email || parsed.agency.email === 'karlljacob8@gmail.com') {
+            parsed.agency.email = DEFAULT_SETTINGS.agency.email;
+            localStorage.setItem('holiday_travelers_settings_v2', JSON.stringify(parsed));
+          }
+          return parsed;
+        }
       } catch (e) {
         console.error(e);
       }

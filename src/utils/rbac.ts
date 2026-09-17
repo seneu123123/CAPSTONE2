@@ -25,7 +25,6 @@ export const ROLE_DEFAULT_TABS: Record<StaffRole, SubmoduleTab[]> = {
     'reconciliation',
     'guide_roster',
     'feedback',
-    'laravel_integration',
     'settings',
     'rbac'
   ],
@@ -132,7 +131,6 @@ export const TAB_DISPLAY_NAMES: Record<SubmoduleTab, string> = {
   reconciliation: 'Fiscal Reconciliation & Payouts',
   guide_roster: 'Field Guide Roll Call & Check-In',
   feedback: 'Customer Feedback & Ratings',
-  laravel_integration: 'Laravel Integration Hub',
   settings: 'System & Agency Settings',
   rbac: 'Staff & RBAC Governance'
 };
@@ -273,10 +271,16 @@ export function getStoredStaffAccounts(): StaffAccount[] {
         changed = true;
       }
 
-      // Ensure allowedTabs exist
+      // Ensure allowedTabs exist and filter out deprecated tabs (e.g. laravel_integration)
       if (!updated.allowedTabs || updated.allowedTabs.length === 0) {
         updated.allowedTabs = ROLE_DEFAULT_TABS[updated.role] || ROLE_DEFAULT_TABS['Custom Staff'];
         changed = true;
+      } else {
+        const validTabs = updated.allowedTabs.filter((tab) => tab in TAB_DISPLAY_NAMES);
+        if (validTabs.length !== updated.allowedTabs.length) {
+          updated.allowedTabs = validTabs;
+          changed = true;
+        }
       }
 
       if (changed) modified = true;
@@ -328,7 +332,7 @@ export function authenticateStaffCredentials(
   }
 
   const expectedPassword = account.password || DEFAULT_PASSWORD_VALUE;
-  if (passwordAttempt !== expectedPassword && passwordAttempt !== DEFAULT_PASSWORD_VALUE) {
+  if (passwordAttempt !== expectedPassword) {
     return {
       success: false,
       error: 'Authentication Failure: Invalid password provided.'

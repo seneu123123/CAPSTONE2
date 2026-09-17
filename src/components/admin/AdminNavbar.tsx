@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SubmoduleTab } from '../../types';
 import { 
   Compass, 
@@ -9,7 +9,6 @@ import {
   CreditCard, 
   Star, 
   Briefcase, 
-  Server, 
   Settings as SettingsIcon,
   LogOut,
   ExternalLink,
@@ -23,6 +22,7 @@ import {
   ClipboardCheck
 } from 'lucide-react';
 import { hasTabAccess, findStaffAccountByEmail, getRoleBadgeStyle } from '../../utils/rbac';
+import { ActionConfirmModal } from '../common/ActionConfirmModal';
 
 interface AdminNavbarProps {
   activeTab: SubmoduleTab;
@@ -45,6 +45,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
   adminEmail,
   adminRole
 }) => {
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const staffAccount = findStaffAccountByEmail(adminEmail);
   const userContext = staffAccount || { email: adminEmail, role: adminRole };
   const badgeStyle = getRoleBadgeStyle(adminRole);
@@ -90,7 +91,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onOpenCapstoneModal}
-              className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs text-ivory/90 font-sans-body tracking-wider transition-colors"
+              className="btn-pop hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-95 border border-white/[0.08] text-xs text-ivory/90 font-sans-body tracking-wider transition-all cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" style={{ color: 'var(--admin-accent, #F26A4F)' }} />
               <span>Submodule Architecture</span>
@@ -109,8 +110,8 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
             </div>
 
             <button
-              onClick={onLogout}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-950/40 hover:bg-red-900/60 border border-red-800/50 text-red-300 text-xs font-medium transition-all shadow-sm font-sans-body"
+              onClick={() => setIsExitConfirmOpen(true)}
+              className="btn-pop flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-950/40 hover:bg-red-900/60 active:scale-95 border border-red-800/50 text-red-300 text-xs font-medium transition-all shadow-sm font-sans-body cursor-pointer"
               title="Return to Public Customer Portal"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -129,7 +130,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('overview')}
                 style={activeTab === 'overview' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'overview'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -145,7 +146,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('packages')}
                 style={activeTab === 'packages' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'packages'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -161,7 +162,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('guide_roster')}
                 style={activeTab === 'guide_roster' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'guide_roster'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -177,7 +178,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('bookings')}
                 style={activeTab === 'bookings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'bookings'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -193,7 +194,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
                 </span>
                 {bookingCount > 0 && (
                   <span 
-                    className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/60 font-mono font-bold border border-white/10"
+                    className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/60 font-mono font-bold border border-white/10"
                     style={{ color: 'var(--admin-accent, #F26A4F)' }}
                   >
                     {bookingCount}
@@ -207,7 +208,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('itineraries')}
                 style={activeTab === 'itineraries' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'itineraries'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -223,7 +224,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('reservations')}
                 style={activeTab === 'reservations' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'reservations'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -239,7 +240,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('fleet_dispatch')}
                 style={activeTab === 'fleet_dispatch' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'fleet_dispatch'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -255,7 +256,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('payment_gate')}
                 style={activeTab === 'payment_gate' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'payment_gate'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -264,7 +265,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Payment Gate Audit</span>
                 {pendingPaymentCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold font-mono">
                     {pendingPaymentCount}
                   </span>
                 )}
@@ -276,7 +277,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('payments')}
                 style={activeTab === 'payments' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'payments'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -285,7 +286,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
                 <CreditCard className="w-3.5 h-3.5" />
                 <span>Payment & Invoice Management</span>
                 {pendingPaymentCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
                     {pendingPaymentCount}
                   </span>
                 )}
@@ -297,7 +298,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('reconciliation')}
                 style={activeTab === 'reconciliation' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'reconciliation'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -313,7 +314,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               <button
                 onClick={() => onTabChange('feedback')}
                 style={activeTab === 'feedback' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'feedback'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -324,28 +325,12 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               </button>
             )}
 
-            {/* Laravel Hub */}
-            {canAccess('laravel_integration') && (
-              <button
-                onClick={() => onTabChange('laravel_integration')}
-                style={activeTab === 'laravel_integration' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
-                  activeTab === 'laravel_integration'
-                    ? 'text-white font-medium shadow-md shadow-black/40'
-                    : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
-                }`}
-              >
-                <Server className="w-3.5 h-3.5" />
-                <span>Laravel Integration Hub</span>
-              </button>
-            )}
-
             {/* Settings */}
             {canAccess('settings') && (
               <button
                 onClick={() => onTabChange('settings')}
                 style={activeTab === 'settings' ? { backgroundColor: 'var(--admin-accent, #F26A4F)' } : {}}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'settings'
                     ? 'text-white font-medium shadow-md shadow-black/40'
                     : 'text-sand-muted hover:text-ivory hover:bg-white/[0.05]'
@@ -360,7 +345,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
             {canAccess('rbac') && (
               <button
                 onClick={() => onTabChange('rbac')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 ${
+                className={`btn-pop flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans-body tracking-wider whitespace-nowrap transition-all duration-300 active:scale-95 cursor-pointer ${
                   activeTab === 'rbac'
                     ? 'bg-rose-600 text-white font-medium shadow-md shadow-rose-900/50'
                     : 'text-rose-300/80 hover:text-rose-200 hover:bg-rose-500/10 border border-rose-500/20'
@@ -368,7 +353,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
               >
                 <Users className="w-3.5 h-3.5 text-rose-400" />
                 <span>Staff & RBAC Governance</span>
-                <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-rose-500/20 text-rose-300 font-mono font-bold uppercase">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-rose-500/20 text-rose-300 font-mono font-bold uppercase">
                   Admin
                 </span>
               </button>
@@ -376,6 +361,28 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
           </nav>
         </div>
       </div>
+
+      {/* Safeguard Exit Confirmation Modal */}
+      <ActionConfirmModal
+        isOpen={isExitConfirmOpen}
+        onClose={() => setIsExitConfirmOpen(false)}
+        onConfirm={() => {
+          setIsExitConfirmOpen(false);
+          onLogout();
+        }}
+        title="Exit Operator Control Tower?"
+        message="You are about to switch out of the administrative operations console and return to the public customer site. Unsaved form changes in active tabs will be cleared."
+        details={[
+          { label: 'Staff Account', value: adminEmail },
+          { label: 'Security Role', value: adminRole },
+          { label: 'Active Submodule', value: activeTab.toUpperCase() },
+          { label: 'Pending Collections', value: `${pendingPaymentCount} Invoices` }
+        ]}
+        confirmText="Yes, Return to Guest Site"
+        cancelText="Stay in Operator Tower"
+        variant="warning"
+        warningNote="To return to this console later, click 'Admin Portal' in the navigation bar or use staff credentials."
+      />
     </header>
   );
 };

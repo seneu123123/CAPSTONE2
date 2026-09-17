@@ -54,7 +54,7 @@ Payment Ref: ${booking.customerReferenceNo || booking.invoice.payments[0]?.refer
 Status: Pending Manual Finance Audit
 
 Unit 1101 City & Land Mega Plaza, ADB Ave. cor. Garnet Rd., Ortigas Center, Pasig City
-Phone: 0916 525 3517 | Email: karlljacob8@gmail.com`;
+Phone: 0916 525 3517 | Email: holidaytravelersinc2022@gmail.com`;
 
     navigator.clipboard.writeText(summaryText);
     setCopiedViber(true);

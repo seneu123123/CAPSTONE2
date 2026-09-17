@@ -314,7 +314,7 @@ export const PaymentInvoiceManagement: React.FC<PaymentInvoiceManagementProps> =
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-[#0B1014] border border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
             {/* Dynamic Stamp on Voucher */}
-            <div className="absolute top-6 right-14 z-10 pointer-events-none hidden sm:block">
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-14 z-10 pointer-events-none block scale-75 sm:scale-100 origin-top-right">
               <RubberStamp
                 type={
                   viewingInvoiceBooking.invoice.balanceDue === 0

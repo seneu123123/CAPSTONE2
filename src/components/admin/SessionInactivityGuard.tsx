@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Lock, Clock, ShieldAlert, LogOut, KeyRound } from 'lucide-react';
 import { authenticateStaffCredentials, logSecurityEvent } from '../../utils/rbac';
 
@@ -153,9 +154,9 @@ export const SessionInactivityGuard: React.FC<SessionInactivityGuardProps> = ({
       )}
 
       {/* 3. Screen Lock Barrier (Requires Password to Resume) */}
-      {isLocked && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B0E]/95 backdrop-blur-2xl animate-fade-in font-sans-body">
-          <div className="w-full max-w-md bg-[#0B1014] border border-white/15 rounded-3xl p-8 shadow-2xl shadow-black text-center space-y-6">
+      {isLocked && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-[#070B0E]/95 backdrop-blur-2xl animate-fade-in font-sans-body overflow-y-auto">
+          <div className="w-full max-w-md bg-[#0B1014] border border-white/15 rounded-3xl p-8 shadow-2xl shadow-black text-center space-y-6 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             <div className="w-16 h-16 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto shadow-lg shadow-rose-900/30">
               <Lock className="w-8 h-8" />
             </div>
@@ -220,7 +221,8 @@ export const SessionInactivityGuard: React.FC<SessionInactivityGuardProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

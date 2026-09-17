@@ -63,7 +63,7 @@ export const InPersonReceiptModal: React.FC<InPersonReceiptModalProps> = ({
     companyName: 'Holiday Travelers Inc.',
     address: 'Unit 1101 City & Land Mega Plaza Inc., ADB Ave., Corner Garnet Rd., Ortigas Center, Pasig City, Philippines, 1605',
     phone: '0916 525 3517',
-    email: 'karlljacob8@gmail.com',
+    email: 'holidaytravelersinc2022@gmail.com',
     accreditationNo: 'DOT-ACCR-NCR-2026'
   };
 

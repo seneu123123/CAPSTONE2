@@ -181,7 +181,7 @@ Amount Paid: ₱${b.invoice.amountPaid.toLocaleString()}
 Payment Status: ${b.paymentVerificationStatus || b.invoice.payments[0]?.status || 'Pending Verification'}
 
 Office Address: Unit 1101 City & Land Mega Plaza, ADB Ave. cor. Garnet Rd., Ortigas Center, Pasig City
-Phone: 0916 525 3517 | Email: karlljacob8@gmail.com`;
+Phone: 0916 525 3517 | Email: holidaytravelersinc2022@gmail.com`;
 
     navigator.clipboard.writeText(summary);
     setCopiedViber(true);

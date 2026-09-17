@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Booking, TourPackage } from '../../types';
+import { ActionConfirmModal } from '../common/ActionConfirmModal';
+import { RubberStamp } from '../common/RubberStamp';
+import { dispatchAppNotification } from '../../utils/notifications';
 import { 
   Compass, 
   Anchor, 
@@ -40,6 +43,10 @@ interface FleetCraft {
 
 export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings }) => {
   const [filterType, setFilterType] = useState<string>('all');
+  const [confirmStatusChange, setConfirmStatusChange] = useState<{
+    craft: FleetCraft;
+    targetStatus: FleetCraft['status'];
+  } | null>(null);
   
   // Fleet registry sample data
   const [fleet, setFleet] = useState<FleetCraft[]>([
@@ -120,8 +127,21 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
     },
   ]);
 
-  const updateStatus = (id: string, nextStatus: FleetCraft['status']) => {
-    setFleet(prev => prev.map(c => c.id === id ? { ...c, status: nextStatus } : c));
+  const handlePromptStatusChange = (craft: FleetCraft, nextStatus: FleetCraft['status']) => {
+    if (craft.status === nextStatus) return;
+    setConfirmStatusChange({ craft, targetStatus: nextStatus });
+  };
+
+  const handleExecuteStatusChange = () => {
+    if (!confirmStatusChange) return;
+    const { craft, targetStatus } = confirmStatusChange;
+    setFleet(prev => prev.map(c => c.id === craft.id ? { ...c, status: targetStatus } : c));
+    dispatchAppNotification({
+      title: `Fleet Clearance Updated: ${craft.name}`,
+      message: `Status transitioned to "${targetStatus}". Harbor & port logs updated.`,
+      type: 'info'
+    });
+    setConfirmStatusChange(null);
   };
 
   const filteredFleet = fleet.filter(c => filterType === 'all' || c.type === filterType);
@@ -181,32 +201,32 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
       <div className="flex items-center gap-2 bg-[#0B1014] p-3 rounded-2xl border border-white/10 overflow-x-auto">
         <button
           onClick={() => setFilterType('all')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            filterType === 'all' ? 'bg-sunset-coral text-white' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
+          className={`btn-pop px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all ${
+            filterType === 'all' ? 'bg-sunset-coral text-white shadow-md shadow-sunset-coral/20' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
           }`}
         >
           All Fleet Craft ({fleet.length})
         </button>
         <button
           onClick={() => setFilterType('Motorized Banca')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            filterType === 'Motorized Banca' ? 'bg-blue-600 text-white' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
+          className={`btn-pop px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all ${
+            filterType === 'Motorized Banca' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
           }`}
         >
           Outrigger Bancas
         </button>
         <button
           onClick={() => setFilterType('Tourist Van')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            filterType === 'Tourist Van' ? 'bg-emerald-600 text-white' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
+          className={`btn-pop px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all ${
+            filterType === 'Tourist Van' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
           }`}
         >
           Tourist Vans
         </button>
         <button
           onClick={() => setFilterType('Speedboat')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            filterType === 'Speedboat' ? 'bg-purple-600 text-white' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
+          className={`btn-pop px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer active:scale-95 transition-all ${
+            filterType === 'Speedboat' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20' : 'bg-[#070B0E] text-sand-muted hover:text-ivory border border-white/10'
           }`}
         >
           Speedboats
@@ -222,8 +242,35 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
           return (
             <div 
               key={craft.id}
-              className="bg-[#0B1014] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4 hover:border-white/20 transition-all"
+              className="bg-[#0B1014] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4 hover:border-white/20 transition-all relative overflow-hidden"
             >
+              {/* Official Harbor Physical Stamp */}
+              {craft.status === 'Cleared to Sail' && (
+                <div className="absolute top-3 right-32 pointer-events-none hidden sm:block scale-75 origin-top-right opacity-80">
+                  <RubberStamp
+                    type="VERIFIED"
+                    subtext="PCG HARBOR PERMIT"
+                    date="PORT HARBOR CLEARED"
+                    verificationCode={craft.registrationNo}
+                    size="sm"
+                    rotation={-6}
+                  />
+                </div>
+              )}
+
+              {craft.status === 'Weather Hold' && (
+                <div className="absolute top-3 right-32 pointer-events-none hidden sm:block scale-75 origin-top-right opacity-80">
+                  <RubberStamp
+                    type="CANCELLED"
+                    subtext="PAGASA ADVISORY"
+                    date="HARBOR HOLD"
+                    verificationCode={craft.registrationNo}
+                    size="sm"
+                    rotation={-8}
+                  />
+                </div>
+              )}
+
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
@@ -297,8 +344,8 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
                 <div className="flex items-center gap-1.5">
                   <select
                     value={craft.status}
-                    onChange={(e) => updateStatus(craft.id, e.target.value as any)}
-                    className="bg-[#070B0E] border border-white/10 rounded-lg px-2 py-1 text-xs text-ivory focus:outline-none"
+                    onChange={(e) => handlePromptStatusChange(craft, e.target.value as any)}
+                    className="bg-[#070B0E] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-ivory focus:outline-none focus:border-cyan-400 cursor-pointer"
                   >
                     <option value="Cleared to Sail">Cleared to Sail</option>
                     <option value="Pending Inspection">Pending PCG</option>
@@ -307,7 +354,7 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
                   </select>
                   <a
                     href={`tel:${craft.operatorContact}`}
-                    className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-emerald-400 transition-all border border-white/10"
+                    className="btn-pop p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-emerald-400 transition-all border border-white/10 active:scale-95 cursor-pointer"
                     title="Call Vessel Master / Driver"
                   >
                     <Phone className="w-3.5 h-3.5" />
@@ -318,6 +365,31 @@ export const FleetDispatchBoard: React.FC<FleetDispatchBoardProps> = ({ bookings
           );
         })}
       </div>
+
+      {/* Confirmation Safeguard Modal for Fleet Dispatch Status */}
+      <ActionConfirmModal
+        isOpen={confirmStatusChange !== null}
+        onClose={() => setConfirmStatusChange(null)}
+        onConfirm={handleExecuteStatusChange}
+        title={`Update Fleet Status for ${confirmStatusChange?.craft.name}?`}
+        message={`Are you sure you want to transition this craft status to "${confirmStatusChange?.targetStatus}"? This alters harbor clearance and passenger dispatch notifications.`}
+        details={[
+          { label: 'Craft Name', value: confirmStatusChange?.craft.name || '' },
+          { label: 'Registration No.', value: confirmStatusChange?.craft.registrationNo || '' },
+          { label: 'Assigned Expedition', value: confirmStatusChange?.craft.assignedTour || '' },
+          { label: 'Manifest Load', value: `${confirmStatusChange?.craft.currentPax || 0} / ${confirmStatusChange?.craft.maxCapacity || 0} Pax` },
+          { label: 'Berth / Stand', value: confirmStatusChange?.craft.dockPier || '' },
+          { label: 'New Clearance', value: confirmStatusChange?.targetStatus || '' },
+        ]}
+        confirmText={`Yes, Set as ${confirmStatusChange?.targetStatus || ''}`}
+        cancelText="Cancel"
+        variant={confirmStatusChange?.targetStatus === 'Weather Hold' || confirmStatusChange?.targetStatus === 'Maintenance' ? 'danger' : 'primary'}
+        warningNote={
+          confirmStatusChange?.targetStatus === 'Weather Hold'
+            ? 'WARNING: Weather Hold grounds all scheduled departures. Philippine Coast Guard station logs will be flagged.'
+            : undefined
+        }
+      />
     </div>
   );
 };

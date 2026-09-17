@@ -73,7 +73,6 @@ const ALL_TABS: SubmoduleTab[] = [
   'reservations',
   'payments',
   'feedback',
-  'laravel_integration',
   'settings',
   'rbac'
 ];
@@ -1428,11 +1427,11 @@ export const UserRbacManagement: React.FC<UserRbacManagementProps> = ({
       {/* ========================================================================= */}
       {isPasswordModalOpen && selectedAccount && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-md bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-md bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -1505,11 +1504,11 @@ export const UserRbacManagement: React.FC<UserRbacManagementProps> = ({
       {/* ========================================================================= */}
       {isPermissionsModalOpen && selectedAccount && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-lg bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-lg bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
@@ -1703,11 +1702,11 @@ export const UserRbacManagement: React.FC<UserRbacManagementProps> = ({
       {/* ========================================================================= */}
       {isQrModalOpen && selectedAccount && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-lg bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-left">
+          <div className="relative w-full max-w-lg bg-[#0B1014] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-left max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
@@ -1804,11 +1803,11 @@ export const UserRbacManagement: React.FC<UserRbacManagementProps> = ({
       {/* ========================================================================= */}
       {isDeleteModalOpen && selectedAccount && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-md bg-[#0B1014] border border-rose-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+          <div className="relative w-full max-w-md bg-[#0B1014] border border-rose-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             <div className="flex items-center gap-3 border-b border-white/10 pb-4">
               <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
                 <AlertTriangle className="w-5 h-5" />

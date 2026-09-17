@@ -345,7 +345,7 @@ export const AiCustomerConcierge: React.FC<AiCustomerConciergeProps> = ({
           keyPoints = [
             'Turnaround: as fast as 5 days for expedited processing',
             'Document pre-validation and DFA appointment booking',
-            'Inquire directly: 0916 525 3517 or karlljacob8@gmail.com'
+            'Inquire directly: 0916 525 3517 or holidaytravelersinc2022@gmail.com'
           ];
         } else if (lowerQ.includes('visa') || lowerQ.includes('hong kong') || lowerQ.includes('japan') || lowerQ.includes('korea')) {
           replyText = 'We provide complete visa processing services for Hong Kong, Japan, South Korea, Schengen, USA, Canada, and Australia with high approval track records.';
@@ -359,13 +359,13 @@ export const AiCustomerConcierge: React.FC<AiCustomerConciergeProps> = ({
           keyPoints = [
             'Address: Unit 1101 City & Land Mega Plaza Inc., ADB Ave. cor. Garnet Rd., Ortigas, Pasig',
             'Phone: 0916 525 3517',
-            'Email: karlljacob8@gmail.com'
+            'Email: holidaytravelersinc2022@gmail.com'
           ];
         } else if (lowerQ.includes('contact') || lowerQ.includes('number') || lowerQ.includes('call') || lowerQ.includes('phone') || lowerQ.includes('email')) {
-          replyText = 'You can reach Holiday Travelers Inc. directly via mobile/WhatsApp/Viber at 0916 525 3517 or email us at karlljacob8@gmail.com.';
+          replyText = 'You can reach Holiday Travelers Inc. directly via mobile/WhatsApp/Viber at 0916 525 3517 or email us at holidaytravelersinc2022@gmail.com.';
           keyPoints = [
             'Direct Mobile / WhatsApp: 0916 525 3517',
-            'Direct Email: karlljacob8@gmail.com',
+            'Direct Email: holidaytravelersinc2022@gmail.com',
             'Office: Unit 1101 City & Land Mega Plaza Inc., ADB Ave., Ortigas Center, Pasig City'
           ];
         } else {
@@ -539,7 +539,7 @@ export const AiCustomerConcierge: React.FC<AiCustomerConciergeProps> = ({
                     className="p-2 rounded-xl bg-white/[0.03] hover:bg-sunset-coral/15 border border-white/[0.06] hover:border-sunset-coral/40 text-left text-[11px] text-ivory/90 hover:text-white transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-2 pr-2">
-                      <span className="px-1.5 py-0.2 text-[9px] font-mono rounded bg-white/[0.06] text-sand-muted group-hover:text-sunset-coral">
+                      <span className="px-1.5 py-0.5 text-[9px] font-mono rounded bg-white/[0.06] text-sand-muted group-hover:text-sunset-coral">
                         {faq.badge}
                       </span>
                       <span className="line-clamp-1">{faq.question}</span>

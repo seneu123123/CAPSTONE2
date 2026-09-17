@@ -98,8 +98,8 @@ export const ClientFooter: React.FC<ClientFooterProps> = ({
 
               <div className="flex items-center gap-2.5 text-sand-muted">
                 <Mail className="w-4 h-4 text-sunset-coral shrink-0" />
-                <a href="mailto:karlljacob8@gmail.com" className="hover:text-ivory transition-colors underline font-mono">
-                  karlljacob8@gmail.com
+                <a href="mailto:holidaytravelersinc2022@gmail.com" className="hover:text-ivory transition-colors underline font-mono">
+                  holidaytravelersinc2022@gmail.com
                 </a>
               </div>
             </div>
@@ -210,7 +210,7 @@ export const ClientFooter: React.FC<ClientFooterProps> = ({
                   </button>
                 </li>
                 <li>
-                  <a href="mailto:karlljacob8@gmail.com" className="hover:text-ivory transition-colors">
+                  <a href="mailto:holidaytravelersinc2022@gmail.com" className="hover:text-ivory transition-colors">
                     Email Inquiry
                   </a>
                 </li>

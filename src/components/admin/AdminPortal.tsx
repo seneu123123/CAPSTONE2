@@ -16,7 +16,6 @@
   import { HotelTransportReservation } from '../submodules/HotelTransportReservation';
   import { PaymentInvoiceManagement } from '../submodules/PaymentInvoiceManagement';
   import { CustomerFeedbackRating } from '../submodules/CustomerFeedbackRating';
-  import { LaravelIntegrationHub } from '../submodules/LaravelIntegrationHub';
   import { SystemSettings } from '../submodules/SystemSettings';
   import { UserRbacManagement } from '../submodules/UserRbacManagement';
   import { FleetDispatchBoard } from '../submodules/FleetDispatchBoard';
@@ -238,11 +237,6 @@
             onSubmitFeedback={onSubmitFeedback}
             isOperatorView={true}
           />
-        )}
-
-        {/* 7. Laravel + Sanctum Integration Hub */}
-        {activeTab === 'laravel_integration' && (
-          <LaravelIntegrationHub />
         )}
 
         {/* 8. System Settings & Agency Branding */}

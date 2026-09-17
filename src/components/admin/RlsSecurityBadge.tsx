@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ShieldCheck, ShieldAlert, Eye, Lock, Database, Info, X, CheckCircle2 } from 'lucide-react';
 import { RLSExecutionReport } from '../../utils/rowLevelSecurity';
 
@@ -17,7 +18,7 @@ export const RlsSecurityBadge: React.FC<RlsSecurityBadgeProps> = ({ report }) =>
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium transition-all border shadow-sm ${
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-medium transition-all border shadow-sm cursor-pointer active:scale-95 ${
           isRestricted
             ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20'
             : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
@@ -28,24 +29,24 @@ export const RlsSecurityBadge: React.FC<RlsSecurityBadgeProps> = ({ report }) =>
         <span className="hidden sm:inline">RLS Policy:</span>
         <span className="font-semibold text-ivory">{report.activePolicy}</span>
         {isRestricted ? (
-          <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/20 text-amber-200 border border-amber-500/30">
+          <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-200 border border-amber-500/30">
             {report.permittedRows}/{report.totalRows} Rows
           </span>
         ) : (
-          <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-200 border border-emerald-500/30">
+          <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-200 border border-emerald-500/30">
             Full
           </span>
         )}
       </button>
 
       {/* RLS Policy Inspector Modal */}
-      {isModalOpen && (
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in font-sans-body"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in font-sans-body overflow-y-auto"
           role="dialog"
           aria-modal="true"
         >
-          <div className="relative w-full max-w-2xl bg-[#0B1014] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="relative w-full max-w-2xl bg-[#0B1014] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
             {/* Header */}
             <div className="flex items-start justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3.5">
@@ -68,7 +69,7 @@ export const RlsSecurityBadge: React.FC<RlsSecurityBadgeProps> = ({ report }) =>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-sand-muted hover:text-ivory transition-colors"
+                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-sand-muted hover:text-ivory transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -166,7 +167,8 @@ export const RlsSecurityBadge: React.FC<RlsSecurityBadgeProps> = ({ report }) =>
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

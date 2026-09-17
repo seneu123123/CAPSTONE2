@@ -260,7 +260,7 @@ export const CYBERSECURITY_STATEMENT: LegalDocument = {
       ],
       bulletPoints: [
         'A.5 Information Security Policies: Formally reviewed access control and incident response procedures.',
-        'A.8 Technological Controls: Modern endpoint security, encrypted token authentication (Laravel Sanctum), and secure proxy architectures preventing client-side secret exposure.',
+        'A.8 Technological Controls: Modern endpoint security, cryptographically signed token authentication, and secure proxy architectures preventing client-side secret exposure.',
         'A.9 Access Control: Zero-trust staff authentication, single-tenant session handling, and granular operational privilege levels.'
       ]
     },

@@ -201,7 +201,6 @@ export type SubmoduleTab =
   | 'reconciliation'
   | 'guide_roster'
   | 'feedback'
-  | 'laravel_integration'
   | 'settings'
   | 'rbac';
 

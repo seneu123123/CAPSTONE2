@@ -231,11 +231,11 @@ export const ClientSpecialties: React.FC<ClientSpecialtiesProps> = ({ onOpenBook
               <span>0916 525 3517</span>
             </a>
             <a
-              href="mailto:karlljacob8@gmail.com"
+              href="mailto:holidaytravelersinc2022@gmail.com"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-sunset-coral hover:bg-[#ff765b] text-white text-xs font-semibold tracking-wider uppercase transition-all shadow-lg shadow-sunset-coral/20"
             >
               <Mail className="w-4 h-4" />
-              <span>Email karlljacob8@gmail.com</span>
+              <span>Email holidaytravelersinc2022@gmail.com</span>
             </a>
           </div>
         </div>

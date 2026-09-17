@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Booking, CustomerFeedback, TourPackage } from '../types';
 import { 
   TrendingUp, 
@@ -19,9 +19,15 @@ import {
   Ship,
   Receipt,
   ClipboardCheck,
-  Users
+  Users,
+  Download,
+  FileSpreadsheet,
+  Zap,
+  SlidersHorizontal
 } from 'lucide-react';
 import { hasTabAccess, findStaffAccountByEmail } from '../utils/rbac';
+import { ActionConfirmModal } from './common/ActionConfirmModal';
+import { dispatchAppNotification } from '../utils/notifications';
 
 interface AdminDashboardProps {
   packages: TourPackage[];
@@ -40,6 +46,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   adminEmail = 'karlljacob8@gmail.com',
   onNavigateTab
 }) => {
+  const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'field' | 'finance' | 'management'>('all');
+
   const staffAccount = findStaffAccountByEmail(adminEmail);
   const userContext = staffAccount || { email: adminEmail, role: adminRole };
   const canAccess = (tab: any) => hasTabAccess(userContext, tab);
@@ -54,13 +63,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const isFinance = adminRole.includes('Finance');
   const isOps = adminRole.includes('Operations');
 
+  const handleDownloadExport = () => {
+    const headers = [
+      "Booking Reference",
+      "Customer Name",
+      "Email",
+      "Phone",
+      "Expedition Title",
+      "Package Code",
+      "Travel Date",
+      "Pax Count",
+      "Pickup / Muster Location",
+      "Assigned Guide",
+      "Booking Status",
+      "Payment Status",
+      "Total Amount (PHP)",
+      "Amount Paid (PHP)",
+      "Balance Due (PHP)",
+      "Special Requests"
+    ];
+
+    const rows = bookings.map(b => [
+      `"${b.id}"`,
+      `"${b.customerName || ''}"`,
+      `"${b.customerEmail || ''}"`,
+      `"${b.customerPhone || ''}"`,
+      `"${(b.packageTitle || '').replace(/"/g, '""')}"`,
+      `"${b.packageId || ''}"`,
+      `"${b.startDate || ''}"`,
+      b.passengers?.length || b.numPax || 1,
+      `"${(b.pickupLocation || '').replace(/"/g, '""')}"`,
+      `"${b.assignedGuideName || 'Unassigned'}"`,
+      `"${b.bookingStatus}"`,
+      `"${b.paymentStatus}"`,
+      b.invoice.totalAmount,
+      b.invoice.amountPaid,
+      b.invoice.balanceDue,
+      `"${(b.specialRequests || []).join('; ').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `ElNido-Operations-Briefing-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setIsExportConfirmOpen(false);
+
+    dispatchAppNotification({
+      title: 'Operations Briefing Exported',
+      message: `Generated operational report with ${bookings.length} reservations for ${adminEmail}.`,
+      type: 'info'
+    });
+  };
+
+  const fieldModules = ['guide_roster', 'bookings', 'fleet_dispatch', 'itineraries'];
+  const financeModules = ['payment_gate', 'payments', 'reconciliation'];
+  const managementModules = ['packages', 'reservations', 'feedback', 'rbac'];
+
+  const countAccessible = (modules: string[]) => modules.filter(m => canAccess(m)).length;
+  const allAccessibleCount = [...fieldModules, ...financeModules, ...managementModules].filter(m => canAccess(m)).length;
+
+  const matchesCategory = (tab: string) => {
+    if (selectedCategory === 'all') return true;
+    if (selectedCategory === 'field') return fieldModules.includes(tab);
+    if (selectedCategory === 'finance') return financeModules.includes(tab);
+    if (selectedCategory === 'management') return managementModules.includes(tab);
+    return true;
+  };
+
   return (
     <div className="space-y-8">
       {/* Overview Welcome Banner */}
       <div className="bg-[#0B1014] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-sunset-coral/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="text-xs font-sans-body tracking-[0.25em] uppercase text-sunset-coral font-medium">
               {isGuide ? 'Field Guide Dispatch Hub' : isFinance ? 'Finance & Revenue Ledger' : isOps ? 'Fleet & Logistics Command' : 'Operations Control Tower'}
@@ -85,6 +166,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 ? 'Welcome back, Kyle. Coordinate vessel dispatch, avoid craft overloading, assign guides, and oversee bookings.'
                 : 'Integrated operational suite managing core submodules: Catalog, Manifests, Dispatch, Logistics, Reconciliation, and RBAC.'}
             </p>
+          </div>
+
+          {/* Quick Command Action Group */}
+          <div className="flex flex-wrap items-center gap-3 pt-2 md:pt-0 shrink-0">
+            {canAccess('guide_roster') && isGuide && (
+              <button
+                onClick={() => onNavigateTab('guide_roster')}
+                className="btn-pop btn-shimmer-wrap inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium tracking-wide shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                <span>Launch Roll Call</span>
+              </button>
+            )}
+
+            {canAccess('payment_gate') && isFinance && (
+              <button
+                onClick={() => onNavigateTab('payment_gate')}
+                className="btn-pop btn-shimmer-wrap inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium tracking-wide shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Review Receipts</span>
+              </button>
+            )}
+
+            {canAccess('fleet_dispatch') && isOps && (
+              <button
+                onClick={() => onNavigateTab('fleet_dispatch')}
+                className="btn-pop btn-shimmer-wrap inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium tracking-wide shadow-lg shadow-blue-950/40 active:scale-95 transition-all cursor-pointer"
+              >
+                <Ship className="w-4 h-4" />
+                <span>Maritime Dispatch</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsExportConfirmOpen(true)}
+              className="btn-pop inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] active:scale-95 border border-white/[0.12] text-ivory text-xs font-medium tracking-wide shadow-md transition-all cursor-pointer"
+              title="Download full operational records as CSV"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>Export Operations CSV</span>
+              <Download className="w-3.5 h-3.5 text-sand-muted" />
+            </button>
           </div>
         </div>
 
@@ -297,20 +421,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
-      {/* Submodule Quick Access Hub (Role Filtered) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-sans-body tracking-[0.25em] uppercase text-sand-muted font-medium">
-            Authorized Submodules Directory
-          </p>
+      {/* Submodule Quick Access Hub (Role Filtered & Categorized) */}
+      <div className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-sand-muted" />
+            <p className="text-xs font-sans-body tracking-[0.25em] uppercase text-sand-muted font-medium">
+              Authorized Submodules Directory
+            </p>
+          </div>
+
+          {/* Submodule Category Filter Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-x-auto">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`btn-pop px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === 'all'
+                  ? 'bg-sunset-coral text-white shadow-sm'
+                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.04]'
+              }`}
+            >
+              <span>All Modules</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/30 font-mono font-bold">
+                {allAccessibleCount}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('field')}
+              className={`btn-pop px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === 'field'
+                  ? 'bg-sunset-coral text-white shadow-sm'
+                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.04]'
+              }`}
+            >
+              <span>Field & Fleet</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/30 font-mono font-bold">
+                {countAccessible(fieldModules)}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('finance')}
+              className={`btn-pop px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === 'finance'
+                  ? 'bg-sunset-coral text-white shadow-sm'
+                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.04]'
+              }`}
+            >
+              <span>Finance & Ledger</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/30 font-mono font-bold">
+                {countAccessible(financeModules)}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('management')}
+              className={`btn-pop px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                selectedCategory === 'management'
+                  ? 'bg-sunset-coral text-white shadow-sm'
+                  : 'text-sand-muted hover:text-ivory hover:bg-white/[0.04]'
+              }`}
+            >
+              <span>Operations & RBAC</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/30 font-mono font-bold">
+                {countAccessible(managementModules)}
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Submodule: Field Guide Roll Call */}
-          {canAccess('guide_roster') && (
+          {canAccess('guide_roster') && matchesCategory('guide_roster') && (
             <div
               onClick={() => onNavigateTab('guide_roster')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-emerald-500/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -333,10 +519,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Packages */}
-          {canAccess('packages') && (
+          {canAccess('packages') && matchesCategory('packages') && (
             <div
               onClick={() => onNavigateTab('packages')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -359,10 +545,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Bookings */}
-          {canAccess('bookings') && (
+          {canAccess('bookings') && matchesCategory('bookings') && (
             <div
               onClick={() => onNavigateTab('bookings')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -387,10 +573,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Fleet Dispatch */}
-          {canAccess('fleet_dispatch') && (
+          {canAccess('fleet_dispatch') && matchesCategory('fleet_dispatch') && (
             <div
               onClick={() => onNavigateTab('fleet_dispatch')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-blue-500/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-blue-500/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -413,10 +599,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Itineraries */}
-          {canAccess('itineraries') && (
+          {canAccess('itineraries') && matchesCategory('itineraries') && (
             <div
               onClick={() => onNavigateTab('itineraries')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -441,10 +627,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Hotel & Transport */}
-          {canAccess('reservations') && (
+          {canAccess('reservations') && matchesCategory('reservations') && (
             <div
               onClick={() => onNavigateTab('reservations')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -467,10 +653,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Payment Gate Audit */}
-          {canAccess('payment_gate') && (
+          {canAccess('payment_gate') && matchesCategory('payment_gate') && (
             <div
               onClick={() => onNavigateTab('payment_gate')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-emerald-500/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-emerald-500/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -493,10 +679,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Payments */}
-          {canAccess('payments') && (
+          {canAccess('payments') && matchesCategory('payments') && (
             <div
               onClick={() => onNavigateTab('payments')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -519,10 +705,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Fiscal Reconciliation */}
-          {canAccess('reconciliation') && (
+          {canAccess('reconciliation') && matchesCategory('reconciliation') && (
             <div
               onClick={() => onNavigateTab('reconciliation')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-amber-400/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-amber-400/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -545,10 +731,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Feedback */}
-          {canAccess('feedback') && (
+          {canAccess('feedback') && matchesCategory('feedback') && (
             <div
               onClick={() => onNavigateTab('feedback')}
-              className="bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-white/[0.06] hover:border-sunset-coral/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -571,10 +757,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
 
           {/* Submodule: Staff & RBAC Governance */}
-          {canAccess('rbac') && (
+          {canAccess('rbac') && matchesCategory('rbac') && (
             <div
               onClick={() => onNavigateTab('rbac')}
-              className="bg-[#0B1014] border border-rose-500/20 hover:border-rose-500/60 p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
+              className="btn-pop bg-[#0B1014] border border-rose-500/20 hover:border-rose-500/60 hover:scale-[1.01] active:scale-[0.98] p-6 rounded-2xl cursor-pointer transition-all duration-300 group shadow-lg flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -597,6 +783,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
         </div>
       </div>
+
+      {/* Operations Ledger Export Safeguard Modal */}
+      <ActionConfirmModal
+        isOpen={isExportConfirmOpen}
+        onClose={() => setIsExportConfirmOpen(false)}
+        onConfirm={handleDownloadExport}
+        title="Export Operations Ledger & Manifest CSV?"
+        message="You are about to export active reservation records, financial ledger details, passenger contact rosters, and assigned field guide allocations."
+        details={[
+          { label: 'Authorized Operator', value: adminEmail },
+          { label: 'Security Clearance', value: adminRole },
+          { label: 'Total Reservations', value: `${bookings.length} Bookings` },
+          { label: 'Total Passengers', value: `${totalPassengersCount} Pax` },
+          { label: 'Total Revenue Tracked', value: `₱${totalRevenue.toLocaleString()}` },
+          { label: 'Export Format', value: 'RFC 4180 UTF-8 CSV' }
+        ]}
+        confirmText="Yes, Download Operations CSV"
+        cancelText="Cancel Export"
+        variant="info"
+        warningNote="CONFIDENTIALITY NOTICE: This export includes guest personally identifiable information (PII) and internal agency rates. Comply with the Philippine Data Privacy Act of 2012 (RA 10173)."
+      />
     </div>
   );
 };

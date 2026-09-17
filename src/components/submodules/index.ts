@@ -5,7 +5,6 @@ export * from './FiscalReconciliation';
 export * from './FleetDispatchBoard';
 export * from './HotelTransportReservation';
 export * from './ItineraryScheduleManagement';
-export * from './LaravelIntegrationHub';
 export * from './PaymentInvoiceManagement';
 export * from './SystemSettings';
 export * from './TourPackageManagement';

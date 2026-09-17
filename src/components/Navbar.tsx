@@ -13,8 +13,6 @@ import {
   Briefcase,
   Luggage,
   Sparkles,
-  Server,
-  Code,
   Settings as SettingsIcon
 } from 'lucide-react';
 
@@ -192,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <CreditCard className="w-3.5 h-3.5" />
             <span>Payment & Invoice Management</span>
             {pendingPaymentCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-bold">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-bold">
                 {pendingPaymentCount}
               </span>
             )}
@@ -208,21 +206,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Star className="w-3.5 h-3.5 text-amber-400" />
             <span>Customer Feedback & Ratings</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('laravel_integration')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition ${
-              activeTab === 'laravel_integration'
-                ? 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
-                : 'text-cyan-400 hover:text-cyan-300 hover:bg-slate-900'
-            }`}
-          >
-            <Server className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-bold">Laravel Integration Hub</span>
-            <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-[10px] text-cyan-300 border border-cyan-500/30 font-mono">
-              PostgreSQL
-            </span>
           </button>
 
           <button

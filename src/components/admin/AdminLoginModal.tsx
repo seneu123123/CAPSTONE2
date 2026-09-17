@@ -358,7 +358,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               logSecurityEvent(
                 normEmail,
                 'USER_LOGIN_SUCCESS',
-                `Staff ${normEmail} authenticated via live Laravel SMTP 2FA as "${role}".`,
+                `Staff ${normEmail} authenticated via live SMTP 2FA as "${role}".`,
                 'info',
                 normEmail
               );
@@ -519,8 +519,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in font-sans-body select-none">
-      <div className="relative w-full max-w-md bg-[#0B1014] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in font-sans-body select-none overflow-y-auto">
+      <div className="relative w-full max-w-md bg-[#0B1014] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/95 max-h-[90vh] overflow-y-auto overscroll-contain my-auto">
         
         {/* Close Button */}
         <button

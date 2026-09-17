@@ -19,6 +19,8 @@ import {
   Search
 } from 'lucide-react';
 import { RubberStamp } from '../common/RubberStamp';
+import { ActionConfirmModal } from '../common/ActionConfirmModal';
+import { dispatchAppNotification } from '../../utils/notifications';
 
 interface FiscalReconciliationProps {
   bookings: Booking[];
@@ -28,6 +30,7 @@ export const FiscalReconciliation: React.FC<FiscalReconciliationProps> = ({ book
   const [activeChannel, setActiveChannel] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBookingForOR, setSelectedBookingForOR] = useState<Booking | null>(null);
+  const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false);
 
   // Aggregate channel settlement figures
   const channelStats = useMemo(() => {
@@ -153,6 +156,13 @@ export const FiscalReconciliation: React.FC<FiscalReconciliationProps> = ({ book
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    dispatchAppNotification({
+      title: 'Fiscal Ledger CSV Exported',
+      message: `Generated encrypted audit manifest with ${filteredBookings.length} reconciled transactions.`,
+      type: 'info'
+    });
+    setIsExportConfirmOpen(false);
   };
 
   return (
@@ -180,8 +190,8 @@ export const FiscalReconciliation: React.FC<FiscalReconciliationProps> = ({ book
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] border border-white/10 text-xs text-ivory font-medium transition-all"
+              onClick={() => setIsExportConfirmOpen(true)}
+              className="btn-pop btn-shimmer-wrap flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] active:scale-95 border border-white/10 text-xs text-ivory font-medium transition-all cursor-pointer shadow-md"
             >
               <Download className="w-3.5 h-3.5 text-sand-muted" />
               <span>Export Audit CSV</span>
@@ -499,7 +509,7 @@ export const FiscalReconciliation: React.FC<FiscalReconciliationProps> = ({ book
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-[#0B1014] border border-white/20 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 relative overflow-hidden">
             {/* Rubber Stamp on Official Tax Receipt */}
-            <div className="absolute top-5 right-12 z-10 pointer-events-none hidden sm:block">
+            <div className="absolute top-4 right-4 sm:top-5 sm:right-12 z-10 pointer-events-none block scale-75 sm:scale-100 origin-top-right">
               <RubberStamp
                 type={
                   selectedBookingForOR.paymentStatus === 'Paid'
@@ -578,6 +588,24 @@ export const FiscalReconciliation: React.FC<FiscalReconciliationProps> = ({ book
           </div>
         </div>
       )}
+
+      {/* Confirmation Safeguard for Exporting Reconciliation Ledger */}
+      <ActionConfirmModal
+        isOpen={isExportConfirmOpen}
+        onClose={() => setIsExportConfirmOpen(false)}
+        onConfirm={handleExportCSV}
+        title="Export Financial Reconciliation Audit CSV?"
+        message="This will generate and download an official CSV ledger containing all filtered transaction records and settlement states for internal accounting and BIR tax auditing."
+        details={[
+          { label: 'Active Channel Filter', value: activeChannel.toUpperCase() },
+          { label: 'Total Filtered Records', value: `${filteredBookings.length} Bookings` },
+          { label: 'Reconciled Gross Volume', value: `₱${channelStats.grandTotal.toLocaleString()}` },
+          { label: 'Target Output', value: `HTTT_Fiscal_Reconciliation_${new Date().toISOString().slice(0, 10)}.csv` },
+        ]}
+        confirmText="Yes, Download Audit CSV"
+        cancelText="Cancel"
+        variant="primary"
+      />
     </div>
   );
 };
